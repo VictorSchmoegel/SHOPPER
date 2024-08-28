@@ -32,7 +32,7 @@ async function uploadImg() {
     { text: "Describe this image." },
   ]);
   // console.log(result.response.text());
-  return result.response.text();
+  // return result.response.text();
 }
 
 uploadImg();
