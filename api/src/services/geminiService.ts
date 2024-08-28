@@ -12,17 +12,16 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
 const fileManager = new GoogleAIFileManager(process.env.API_KEY);
 const filePath = path.join(__dirname, '../assets/jetpack.jpg');
 
-async function uploadImg() {
+export const uploadImg = async (base64Image: string) => {
   try {
-    const uploadResponse = await fileManager.uploadFile(filePath, {
+    const fileManager = new GoogleAIFileManager(process.env.API_KEY);
+
+    const uploadResponse = await fileManager.uploadBase64(base64Image, {
       mimeType: "image/jpeg",
-      displayName: "jetpack drawing",
+      displayName: "Image Upload",
     });
   
     console.log(`Uploaded file ${uploadResponse.file.displayName} as: ${uploadResponse.file.uri}`);
-  
-    const getResponse = await fileManager.getFile(uploadResponse.file.name);
-    console.log(`Retrieved file ${getResponse.displayName} as ${getResponse.uri}`);
   
     const result = await model.generateContent([
       {
@@ -31,8 +30,10 @@ async function uploadImg() {
           fileUri: uploadResponse.file.uri,
         }
       },
-      { text: "Describe this image." },
+      { text: "Extract the value from this image." },
     ]);
+
+    const measureValue = parseInt(result.response.text().match(/\d+/)[0], 10);
 
     const newImage = new Image({
       name: uploadResponse.file.displayName,
@@ -41,15 +42,13 @@ async function uploadImg() {
     });
     await newImage.save();
 
-    return newImage;
+    return {
+      image_url: newImage.uri,
+      measure_value: measureValue,
+      measure_uuid: newImage._id.toString(),
+    };
   } catch (error) {
     console.error("Error processing the image:", error);
     throw error;
   }
-
-  // console.log(result.response.text());
-  // return result.response.text();
-}
-
-uploadImg();
-module.exports = uploadImg;
+};
