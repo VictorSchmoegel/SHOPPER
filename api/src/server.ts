@@ -1,14 +1,20 @@
 import express from 'express';
+import dotenv from 'dotenv';
+import { connectDb } from './services/db';
+import imgRoutes from './routes/imageRoutes';
+import router from './routes/route';
 
-import { router } from './routes/route';
-
-const PORT = process.env.PORT || 3000;
+dotenv.config();
 
 const app = express();
 
-app.use(express.json());
-app.use(router);
+connectDb();
 
+app.use(express.json());
+app.use('/api', imgRoutes);
+app.use('/', router);
+
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
